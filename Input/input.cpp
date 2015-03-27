@@ -1,10 +1,11 @@
 #include "input.h"
 
-void Input::init()
+void Input::init(SDL_Window* aWindow)
 {
-    Uint8* keyboard = SDL_GetKeyState(&numKeys);
+    const Uint8* keyboard = SDL_GetKeyboardState(&numKeys);
     keys = new bool[numKeys];
     prevKeys = new bool[numKeys];
+    window = aWindow;
 
     for (int i = 0; i < numKeys; ++i)
     {
@@ -22,7 +23,7 @@ void Input::init()
 
 void Input::update()
 {
-    Uint8* keyboard = SDL_GetKeyState(&numKeys);
+    const Uint8* keyboard = SDL_GetKeyboardState(&numKeys);
     for (int i = 0; i < numKeys; ++i)
     {
         prevKeys[i] = keys[i];
@@ -76,7 +77,8 @@ int Input::getMouseY()
 
 void Input::setMousePos(int x, int y)
 {
-    SDL_WarpMouse(x, y);
+    if (window != NULL)
+        SDL_WarpMouseInWindow(window, x, y);
 }
 
 void Input::hideCursor(bool hide)

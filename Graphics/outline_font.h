@@ -1,7 +1,7 @@
 #ifndef OUTLINE_FONT_H
 #define OUTLINE_FONT_H
 
-#include <SDL/SDL_ttf.h>
+#include <SDL2_ttf/SDL_ttf.h>
 #include "graphics.h"
 
 class OutlineFont

@@ -1,7 +1,7 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 class Input
 {
@@ -15,12 +15,14 @@ private:
     int numKeys;
     int mouseX;
     int mouseY;
+    
+    SDL_Window* window;
 public:
     static const int MOUSE_LEFT = 1;
     static const int MOUSE_MIDDLE = 2;
     static const int MOUSE_RIGHT = 3;
 
-    void init();
+    void init(SDL_Window* aWindow);
     void kill();
 
     void update();

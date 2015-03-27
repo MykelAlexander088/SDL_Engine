@@ -12,7 +12,7 @@ private:
     Image image;
     int charSize;
 public:
-    bool load(char fileName[]);
+    bool load(char fileName[], Graphics* g);
     void draw(char text[], int x, int y, Graphics* g);
     void free();
 };

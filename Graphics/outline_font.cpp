@@ -31,21 +31,24 @@ void OutlineFont::free()
     }
 }
 
+//EXPENSIVE (optimization needed)
 void OutlineFont::draw(char text[], int x, int y, int r, int g, int b, Graphics* gfx)
 {
     if (font == NULL)
         return;
 
     SDL_Surface* renderedText = NULL;
+    SDL_Texture* textTexture = NULL;
     SDL_Color color;
     color.r = r;
     color.g = g;
     color.b = b;
     renderedText = TTF_RenderText_Solid(font, text, color);
-    SDL_Rect pos;
-    pos.x = x;
-    pos.y = y;
-
-    SDL_BlitSurface(renderedText, NULL, gfx->getBackbuffer(), &pos);
+    textTexture = SDL_CreateTextureFromSurface(gfx->getRenderer(), renderedText);
+    
+    SDL_Rect pos = {x, y, renderedText->w, renderedText->h};
+    SDL_RenderCopy(gfx->getRenderer(), textTexture, NULL, &pos);
+    
     SDL_FreeSurface(renderedText);
+    SDL_DestroyTexture(textTexture);
 }

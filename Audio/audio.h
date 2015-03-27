@@ -1,8 +1,8 @@
 #ifndef AUDIO_H
 #define AUDIO_H
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+#include <SDL2/SDL.h>
+#include <SDL2_mixer/SDL_mixer.h>
 
 class Audio
 {

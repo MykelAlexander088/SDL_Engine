@@ -1,4 +1,6 @@
 #include "game.h"
+#include <SDL2_image/SDL_image.h>
+
 
 Game::Game() :
     fps(30),
@@ -25,17 +27,23 @@ bool Game::initSystem(char title[], int width, int height, bool fullscreen)
         printf("failed to initialize graphics!\n");
         return false;
     }
-
-    SDL_WM_SetCaption(title,NULL);
+    
+    int imgFlags = IMG_INIT_PNG;
+    if (!(IMG_Init(imgFlags) & imgFlags))
+    {
+        printf("Failed to initialize png loader!\n");
+    }
+    
+    SDL_SetWindowTitle(graphics.getWindow(), title);
 
     if (!audio.init())
     {
         printf("failed to initialize audio!\n");
         return false;
     }
-    input.init();
+    input.init(graphics.getWindow());
 
-    if (!TTF_Init() == -1)
+    if (TTF_Init() == -1)
     {
         printf("TTF failed to init!\n");
         return false;

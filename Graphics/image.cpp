@@ -1,8 +1,8 @@
 #include "image.h"
-#include <SDL/SDL_image.h>
+#include <SDL2_image/SDL_image.h>
 
 Image::Image() :
-    surface(NULL),
+    texture(NULL),
     width(0),
     height(0),
     frameWidth(0),
@@ -16,30 +16,31 @@ Image::~Image()
 
 }
 
-bool Image::load(char fileName[])
+bool Image::load(char fileName[], Graphics* g)
 {
     SDL_Surface* imageLoaded = NULL;
+    SDL_Texture* textureLoaded = NULL;
+    
     imageLoaded = IMG_Load(fileName);
 
     if (imageLoaded != NULL)
     {
-        surface = SDL_DisplayFormat(imageLoaded);
-        SDL_FreeSurface(imageLoaded);
-
-        if (surface != NULL)
+        SDL_SetColorKey(imageLoaded, SDL_TRUE, SDL_MapRGB(imageLoaded->format, 0xFF, 0x00, 0xFF));
+        width = imageLoaded->w;
+        height = imageLoaded->h;
+        textureLoaded = SDL_CreateTextureFromSurface(g->getRenderer(), imageLoaded);
+        if (textureLoaded != NULL)
         {
-            Uint32 colorKey = SDL_MapRGB(surface->format, 0xFF, 0, 0xFF);
-            SDL_SetColorKey(surface, SDL_SRCCOLORKEY, colorKey);
-            width = surface->w;
-            height = surface->h;
+            texture = textureLoaded;
         }
         else
         {
-            printf("Failed to load image: ");
+            printf("could not load texture for image: ");
             printf(fileName);
             printf("\n");
             return false;
         }
+        SDL_FreeSurface(imageLoaded);
     }
     else
     {
@@ -51,9 +52,9 @@ bool Image::load(char fileName[])
     return true;
 }
 
-bool Image::load(char fileName[], int aFrameWidth, int aFrameHeight)
+bool Image::load(char fileName[], Graphics* g, int aFrameWidth, int aFrameHeight)
 {
-    if (load(fileName))
+    if (load(fileName, g))
     {
         frameWidth = aFrameWidth;
         frameHeight = aFrameHeight;
@@ -65,36 +66,28 @@ bool Image::load(char fileName[], int aFrameWidth, int aFrameHeight)
 
 void Image::free()
 {
-    if (surface != NULL)
+    if (texture != NULL)
     {
-        SDL_FreeSurface(surface);
-        surface = NULL;
+        SDL_DestroyTexture(texture);
+        texture = NULL;
+        width = 0;
+        height = 0;
     }
 }
 
 void Image::draw(int x, int y, Graphics* g)
 {
-    if (surface == NULL)
+    if (texture == NULL)
         return;
-    SDL_Rect destRect;
-    destRect.x = x;
-    destRect.y = y;
-    SDL_BlitSurface(surface, NULL, g->getBackbuffer(), &destRect);
+    SDL_Rect destRect = {x, y, width, height};
+    SDL_RenderCopy(g->getRenderer(), texture, NULL, &destRect);
 }
 
 void Image::draw(int x, int y, int frame, Graphics* g)
 {
-    SDL_Rect destRect;
-    destRect.x = x;
-    destRect.y = y;
-
+    SDL_Rect destRect = {x, y, frameWidth, frameHeight};
     int columns = width/frameWidth;
-
-    SDL_Rect sourceRect;
-    sourceRect.y = (frame/columns)*frameHeight;
-    sourceRect.x = (frame%columns)*frameWidth;
-    sourceRect.w = frameWidth;
-    sourceRect.h = frameHeight;
-
-    SDL_BlitSurface(surface, &sourceRect, g->getBackbuffer(), &destRect);
+    SDL_Rect sourceRect = {(frame%columns)*frameWidth, (frame/columns)*frameHeight,
+                            frameWidth, frameHeight};
+    SDL_RenderCopy(g->getRenderer(), texture, &sourceRect, &destRect);
 }

@@ -6,12 +6,25 @@ bool Graphics::init(int aWidth, int aHeight, bool aFullscreen)
     bool success = true;
     width = aWidth;
     height = aHeight;
-    backbuffer = SDL_SetVideoMode(width, height, 32, aFullscreen ? (SDL_SWSURFACE | SDL_FULLSCREEN) : SDL_SWSURFACE);
-
-    if (backbuffer == NULL)
+    
+    window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, aWidth, aHeight, SDL_WINDOW_SHOWN);
+    if (window == NULL)
     {
-        printf("Failed to initialize graphics core\n");
+        printf("Could not create SDL Window!\n");
         success = false;
+    }
+    else
+    {
+        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+        if (renderer == NULL)
+        {
+            printf("Failed to initialize renderer\n");
+            success = false;
+        }
+        else
+        {
+            SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+        }
     }
 
     return success;
@@ -19,61 +32,51 @@ bool Graphics::init(int aWidth, int aHeight, bool aFullscreen)
 
 void Graphics::clearScreen(int r, int g, int b)
 {
-    assert(backbuffer != NULL);
-    Uint32 color;
-    color = SDL_MapRGB(backbuffer->format, r, g, b);
-    SDL_FillRect(backbuffer,NULL,color);
+    SDL_SetRenderDrawColor(renderer, r, g, b, 0xFF);
+    SDL_RenderClear(renderer);;
 }
 
 void Graphics::flip()
 {
-    SDL_Flip(backbuffer);
+    SDL_RenderPresent(renderer);
 }
 
 void Graphics::drawPixel(int x, int y, int r, int g, int b)
 {
-    assert(backbuffer != NULL);
-
-    if(SDL_MUSTLOCK(backbuffer))
-    {
-        if(SDL_LockSurface(backbuffer) < 0)
-            return;
-    }
-
-    if (x > backbuffer->w || x < 0 || y > backbuffer->h || y < 0)
+    assert(renderer != NULL);
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    if (x > w || x < 0 || y > h || y < 0)
         return;
 
-    Uint32 *buffer;
-    Uint32 color;
-
-    color = SDL_MapRGB(backbuffer->format, r, g, b);
-    buffer = (Uint32*)backbuffer->pixels + y*backbuffer->pitch/4 + x;
-    *buffer = color;
-
-    if (SDL_MUSTLOCK(backbuffer))
-        SDL_UnlockSurface(backbuffer);
+    SDL_SetRenderDrawColor(renderer, r, g, b, 0xFF);
+    SDL_RenderDrawPoint(renderer, x, y);
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 }
 
 void Graphics::drawRect(int x, int y, int width, int height, int r, int g, int b)
 {
-    fillRect(x, y, width, 1, r, g, b);
-    fillRect(x, y+height-1, width, 1, r, g, b);
-    fillRect(x, y, 1, height, r, g, b);
-    fillRect(x+width-1, y, 1, height, r, g, b);
+    assert(renderer != NULL);
+    SDL_Rect rect = {x, y, width, height};
+    SDL_SetRenderDrawColor(renderer, r, g, b, 0xFF);
+    SDL_RenderDrawRect(renderer, &rect);
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 }
 
 void Graphics::fillRect(int x, int y, int width, int height, int r, int g, int b)
 {
-    assert(backbuffer != NULL);
+    assert(renderer != NULL);
+    SDL_Rect rect = {x, y, width, height};
+    SDL_SetRenderDrawColor(renderer, r, g, b, 0xFF);
+    SDL_RenderFillRect(renderer, &rect);
+}
 
-    Uint32 color;
-    color = SDL_MapRGB(backbuffer->format, r, g, b);
-    SDL_Rect rect;
-    rect.x = x;
-    rect.y = y;
-    rect.w = width;
-    rect.h = height;
-    SDL_FillRect(backbuffer, &rect, color);
+void Graphics::kill()
+{
+    if (window != NULL)
+    {
+        SDL_DestroyWindow(window);
+    }
 }
 
 

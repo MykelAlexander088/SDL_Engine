@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <SDL/SDL_ttf.h>
+#include <SDL2_ttf/SDL_ttf.h>
 #include "../Graphics/graphics.h"
 #include "../Input/input.h"
 #include "../Audio/audio.h"

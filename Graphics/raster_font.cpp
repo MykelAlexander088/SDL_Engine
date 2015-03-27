@@ -1,8 +1,8 @@
 #include "raster_font.h"
 
-bool RasterFont::load(char fileName[])
+bool RasterFont::load(char fileName[], Graphics* g)
 {
-    if (!image.load(fileName))
+    if (!image.load(fileName, g))
         return false;
 
     charSize = image.getWidth()/NUM_COLUMNS;
